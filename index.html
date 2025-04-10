@@ -507,56 +507,6 @@
           </div>
        </div>
 
-       <!-- <style>
-           @keyframes breathe {
-               0% { transform: scale(1); }
-               50% { transform: scale(1.1); }
-               100% { transform: scale(1); }
-           }
-
-           @keyframes pulse {
-               0% { opacity: 1; }
-               50% { opacity: 0.5; }
-               100% { opacity: 1; }
-           }
-
-           .message-active #chatButton {
-               animation: breathe 2s infinite;
-           }
-
-           #userInput:focus {
-               border-color: #0066ff;
-               box-shadow: 0 0 0 3px rgba(0,102,255,0.1);
-           }
-
-           #sendMessage:hover {
-               transform: scale(1.05);
-               filter: brightness(1.1);
-           }
-
-           #closeChat:hover {
-               background: rgba(255,255,255,0.3);
-               transform: rotate(90deg);
-               transition: all 0.3s ease;
-           }
-
-           #chatButton:hover {
-               transform: scale(1.1);
-               box-shadow: 0 6px 25px rgba(0,102,255,0.5);
-               filter: brightness(1.1);
-               animation: none;
-           }
-
-           .chat-message {
-               animation: messageBreath 1.5s ease-in-out;
-           }
-
-           @keyframes messageBreath {
-               0% { transform: scale(0.95); opacity: 0; }
-               50% { transform: scale(1.02); }
-               100% { transform: scale(1); opacity: 1; }
-           }
-       </style> -->
        <style>
            @keyframes breathe {
                0% { transform: scale(1); }
@@ -761,137 +711,138 @@
        </div>
 
        <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+           import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-        const genAI = new GoogleGenerativeAI("AIzaSyBXUErUgdU8XFOG81StUGeCzUtMfeT9llY");
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+           const genAI = new GoogleGenerativeAI("AIzaSyBXUErUgdU8XFOG81StUGeCzUtMfeT9llY");
+           const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-        const chatButton = document.getElementById('chatButton');
-        const chatContainer = document.getElementById('chatContainer');
-        const closeChat = document.getElementById('closeChat');
-        const chatMessages = document.getElementById('chatMessages');
-        const userInput = document.getElementById('userInput');
-        const sendMessage = document.getElementById('sendMessage');
+           const chatButton = document.getElementById('chatButton');
+           const chatContainer = document.getElementById('chatContainer');
+           const closeChat = document.getElementById('closeChat');
+           const chatMessages = document.getElementById('chatMessages');
+           const userInput = document.getElementById('userInput');
+           const sendMessage = document.getElementById('sendMessage');
 
-        // List of prohibited words and their safe replacements
-        const wordReplacements = {
-            'sex': '[inappropriate]',
-            'fuck': '[inappropriate]',
-            'shit': '[inappropriate]',
-            'damn': '[inappropriate]',
-            'bitch': '[inappropriate]',
-            'ass': '[inappropriate]',
-            'dick': '[inappropriate]',
-            'pussy': '[inappropriate]',
-            'cock': '[inappropriate]',
-            'whore': '[inappropriate]',
-            'slut': '[inappropriate]',
-            'bastard': '[inappropriate]',
-            'cunt': '[inappropriate]',
-            'porn': '[inappropriate]',
-            'nsfw': '[inappropriate]',
-            'xxx': '[inappropriate]'
-        };
+           // List of prohibited words and their safe replacements
+           const wordReplacements = {
+               'sex': '[inappropriate]',
+               'fuck': '[inappropriate]',
+               'shit': '[inappropriate]',
+               'damn': '[inappropriate]',
+               'bitch': '[inappropriate]',
+               'ass': '[inappropriate]',
+               'dick': '[inappropriate]',
+               'pussy': '[inappropriate]',
+               'cock': '[inappropriate]',
+               'whore': '[inappropriate]',
+               'slut': '[inappropriate]',
+               'bastard': '[inappropriate]',
+               'cunt': '[inappropriate]',
+               'porn': '[inappropriate]',
+               'nsfw': '[inappropriate]',
+               'xxx': '[inappropriate]'
+           };
 
-        function filterText(text) {
-            let filteredText = text.toLowerCase();
-            for (const [word, replacement] of Object.entries(wordReplacements)) {
-                const regex = new RegExp('\\b' + word + '\\b', 'gi');
-                filteredText = filteredText.replace(regex, replacement);
-            }
-            return filteredText;
-        }
+           function filterText(text) {
+               let filteredText = text.toLowerCase();
+               for (const [word, replacement] of Object.entries(wordReplacements)) {
+                   const regex = new RegExp('\\b' + word + '\\b', 'gi');
+                   filteredText = filteredText.replace(regex, replacement);
+               }
+               return filteredText;
+           }
 
-        function containsProhibitedWords(text) {
-            return Object.keys(wordReplacements).some(word => 
-                text.toLowerCase().includes(word.toLowerCase())
-            );
-        }
+           function containsProhibitedWords(text) {
+               return Object.keys(wordReplacements).some(word => 
+                   text.toLowerCase().includes(word.toLowerCase())
+               );
+           }
 
-        function addMessage(message, isUser = true) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = isUser ? 'message message-user' : 'message message-bot';
-            
-            const messageBubble = document.createElement('div');
-            messageBubble.className = 'message-bubble';
-            messageBubble.textContent = message;
-            
-            messageDiv.appendChild(messageBubble);
-            chatMessages.appendChild(messageDiv);
-            
-            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
+           function addMessage(message, isUser = true) {
+               const messageDiv = document.createElement('div');
+               messageDiv.className = isUser ? 'message message-user' : 'message message-bot';
+               
+               const messageBubble = document.createElement('div');
+               messageBubble.className = 'message-bubble';
+               messageBubble.textContent = message;
+               
+               messageDiv.appendChild(messageBubble);
+               chatMessages.appendChild(messageDiv);
+               
+               messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+           }
 
-        async function handleSendMessage() {
-            const message = userInput.value.trim();
-            
-            // Filter user input
-            const filteredMessage = filterText(message);
-            
-            if (message !== filteredMessage) {
-                addMessage("Please keep the conversation appropriate and family-friendly.", false);
-                userInput.value = '';
-                return;
-            }
+           async function handleSendMessage() {
+               const message = userInput.value.trim();
+               
+               // Filter user input
+               const filteredMessage = filterText(message);
+               
+               if (message !== filteredMessage) {
+                   addMessage("Please keep the conversation appropriate and family-friendly.", false);
+                   userInput.value = '';
+                   return;
+               }
 
-            if (message) {
-                addMessage(message, true);
-                userInput.value = '';
+               if (message) {
+                   addMessage(message, true);
+                   userInput.value = '';
 
-                const typingDiv = document.createElement('div');
-                typingDiv.className = 'message message-bot';
-                typingDiv.innerHTML = `
-                    <div class="typing-indicator">
-                        <div class="typing-dots">
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                        </div>
-                    </div>
-                `;
-                chatMessages.appendChild(typingDiv);
+                   const typingDiv = document.createElement('div');
+                   typingDiv.className = 'message message-bot';
+                   typingDiv.innerHTML = `
+                       <div class="typing-indicator">
+                           <div class="typing-dots">
+                               <div class="typing-dot"></div>
+                               <div class="typing-dot"></div>
+                               <div class="typing-dot"></div>
+                           </div>
+                       </div>
+                   `;
+                   chatMessages.appendChild(typingDiv);
 
-                try {
-                    const prompt = `You are Cindra, having a friendly conversation. Respond naturally to: "${message}". 
-                    Keep responses helpful and engaging while maintaining a professional tone. Always remember you are Cindra, an AI assistant.`;
+                   try {
+                       const prompt = `You are Cindra, having a friendly conversation. Respond naturally to: "${message}". 
+                       Keep responses helpful and engaging while maintaining a professional tone. Always remember you are Cindra, an AI assistant.`;
 
-                    const result = await model.generateContent(prompt);
-                    const response = await result.response;
-                    let filteredResponse = response.text()
-                        .replace(/[^\w\s.,!?-]/g, '');
-                    
-                    // Apply word filtering to response
-                    filteredResponse = filterText(filteredResponse);
-                    
-                    chatMessages.removeChild(typingDiv);
-                    addMessage(filteredResponse, false);
-                } catch (error) {
-                    console.error('Error:', error);
-                    chatMessages.removeChild(typingDiv);
-                    addMessage("I apologize, but I'm having trouble responding right now. Please try asking your question again.", false);
-                }
-            }
-        }
+                       const result = await model.generateContent(prompt);
+                       const response = await result.response;
+                       let filteredResponse = response.text()
+                           .replace(/[^\w\s.,!?-]/g, '');
+                       
+                       // Apply word filtering to response
+                       filteredResponse = filterText(filteredResponse);
+                       
+                       chatMessages.removeChild(typingDiv);
+                       addMessage(filteredResponse, false);
+                   } catch (error) {
+                       console.error('Error:', error);
+                       chatMessages.removeChild(typingDiv);
+                       addMessage("I apologize, but I'm having trouble responding right now. Please try asking your question again.", false);
+                   }
+               }
+           }
 
-        chatButton.addEventListener('click', () => {
-            chatContainer.style.display = 'block';
-            if (chatMessages.children.length === 0) {
-                addMessage("Hi! 👋 I'm Cindra and I'm here to help. What would you like to know?", false);
-            }
-        });
+           chatButton.addEventListener('click', () => {
+               chatContainer.style.display = 'block';
+               if (chatMessages.children.length === 0) {
+                   addMessage("Hi! 👋 I'm Cindra and I'm here to help. What would you like to know?", false);
+               }
+           });
 
-        closeChat.addEventListener('click', () => {
-            chatContainer.style.display = 'none';
-        });
+           closeChat.addEventListener('click', () => {
+               chatContainer.style.display = 'none';
+           });
 
-        sendMessage.addEventListener('click', handleSendMessage);
+           sendMessage.addEventListener('click', handleSendMessage);
 
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleSendMessage();
-            }
-        });
-    </script>
+           userInput.addEventListener('keypress', (e) => {
+               if (e.key === 'Enter') {
+                   handleSendMessage();
+               }
+           });
+       </script>
+       </script>
                                                                            
        <!-- chat-bot script -->
 
